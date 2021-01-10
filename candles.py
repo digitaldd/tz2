@@ -4,39 +4,38 @@ import numpy as np
 class Candle():
     def __init__(self, df1):
         df = df1
-        self.Low = df.Low
-        self.Open = df.Open
-        self.High = df.High
-        self.Close = df.Close
-        self.Volume = df.Volume
-        self.Green = (df.Close - df.Open) > 0
-        self.Red = (df.Open - df.Close) > 0
+        #df['Index'] = np.arange(df.shape[0])
+        self.Low = float(df.Low)
+        self.Open = float(df.Open)
+        self.High = float(df.High)
+        self.Close = float(df.Close)
+        self.Volume = float(df.Volume)
+        #self.Index = df.Index
+        self.Date = df.Date
+        self.Green = float(df.Close - df.Open)
+        self.Red = float(df.Open - df.Close)
         self.bottomShadowGreen = (df.Open - df.Low) / (df.High - df.Low)
         self.bottomShadowRed = (df.Close - df.Low) / (df.High - df.Low)
-        self.highShadowGreen = (df.High - df.Close) / (df.High - df.Low)
+        self.highShadowGreen = float((df.High - df.Close) / (df.High - df.Low))
         self.highShadowRed = (df.High - df.Open) / (df.High - df.Low)
-        self.bodyGreen = (df.Close - df.Open ) / (df.High - df.Low)
-        self.bodyRed = (df.Open - df.Close ) / (df.High - df.Low)
+        self.bodyGreen = float((df.Close - df.Open ) / (df.High - df.Low))
+        self.bodyRed = float((df.Open - df.Close ) / (df.High - df.Low))
+        #try: # обработка NaN
+        self.PatternGreenBottomShadow = ((df.Close - df.Open) > 0) & ((df.Open - df.Low) / (df.High - df.Low) >= 0.45) & ((df.Close - df.Open ) / (df.High - df.Low) >= 0.2)# & (df.Volume >= int(df.loc[:60].Volume.mean()) * 1.5)
+        self.PatternRedBottomShadow = ((df.Open - df.Close) > 0) & ((df.Close - df.Low) / (df.High - df.Low) >= 0.45) & ((df.Open - df.Close ) / (df.High - df.Low) >= 0.2) #& (df.Volume >= int(df.loc[:60].Volume.mean()) * 1.5)
+        self.PatternGreenHighShadow = ((df.Close - df.Open) > 0) & ((df.High - df.Close) / (df.High - df.Low) >= 0.45) & ((df.Close - df.Open ) / (df.High - df.Low) >= 0.2)# & (df.Volume >= int(df.loc[:60].Volume.mean()) * 1.5)
+        self.PatternRedHighShadow = ((df.Open - df.Close) > 0) & ((df.High - df.Open) / (df.High - df.Low) >= 0.45) & ((df.Open - df.Close ) / (df.High - df.Low) >= 0.2) #& (df.Volume >= int(df.loc[:60].Volume.mean()) * 1.5)
+        #except ValueError: pass
 '''
 def candlePattern (df):
-    df["index"] = np.arange(len(df)) # Добавляем индекс колонку
+    #df["index"] = np.arange(len(df)) # Добавляем индекс колонку
     candle = Candle(df)
-    df3 = df.loc[candle.Green & (candle.bottomShadowGreen >= 0.6) & (candle.bodyGreen >= 0.2)] # зеленая свеча с нижним хвостом
-    df4 = df.loc[candle.Red & (candle.bottomShadowRed >= 0.6) & (candle.bodyRed >= 0.2)] # красная свеча с нижним хвостом
-    
-    df5 = df.loc[candle.Green & (candle.highShadowGreen >= 0.6) & (candle.bodyGreen >= 0.2)] # зеленая свеча с верхним хвостом
-    df6 = df.loc[candle.Red & (candle.highShadowRed >= 0.6) & (candle.bodyRed >= 0.2)] # красная свеча с верхним хвостом
+    print(df[candle.PatternGreenHighShadow])
 
-    df2 = df[1:]# == candle.bodyRed>0
+    #print(df[candle.Red].index[-3:])
 
-    df['signal'] = candle.Red & (candle.bottomShadowRed >= 0.6) & (candle.bodyRed >= 0.2)
-    #df.signal[df.signal == False] = np.nan
-    df.signal[:-1] = np.nan
-    df.signal[-1:] = df.High[-1:] * 1.01
-    print(df)
-    #if len(df3) > 0:
-     #   print(df.loc[df3])
-      #  print(df[1:2])
+
+
 
 df = pd.read_csv('/home/linac/Рабочий стол/data/SPY.csv')
 
