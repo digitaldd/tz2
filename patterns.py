@@ -9,7 +9,7 @@ pd.options.mode.chained_assignment = None # отключение уведомл�
 def tickers (folder):
     return list(filter(lambda x: x.endswith('.csv'), os.listdir(folder)))
 
-def trendUpRed(df):
+def trendUpRed(df): #восходящий тренд красный пин бар
     flag1 = False
     flag2 = False
     flag3 = False
@@ -24,7 +24,7 @@ def trendUpRed(df):
                 flag3 = True
     return flag1 & flag2 & flag3
 
-def trendUpGreen(df):
+def trendUpGreen(df): #восходящий тренд зеленый пин бар
     flag1 = False
     flag2 = False
     flag3 = False
@@ -39,7 +39,7 @@ def trendUpGreen(df):
                 flag3 = True
     return flag1 & flag2 & flag3
 
-def trendDownRed(df):
+def trendDownRed(df): #нисходящий тренд красный пин бар
     flag1 = False
     flag2 = False
     flag3 = False
@@ -48,13 +48,13 @@ def trendDownRed(df):
     candle3 = candles.Candle(df[-1:])
     if (candle1.Red > 0) & (candle1.bodyRed >= 0.7):
         flag1 = True
-        if list(candle2.PatternRedBottomShadow)[0] & (candle2.Close <= candle1.Low) & (candle2.Low < candle1.Low) & (candle2.Open <= candle1.Close):
+        if list(candle2.PatternRedBottomShadow)[0] & (candle2.Close <= candle1.Low) & (candle2.Low < candle1.Low) & (candle2.Open <= (((candle1.Open-candle1.Close) * 0.85) + candle1.Close)):
             flag2 = True
-            if (candle3.Green > 0) & (candle3.Close > candle2.High) & (candle3.Open >= candle2.Close) & (candle3.Low > candle2.Low):
+            if (candle3.Green > 0) & (candle3.Close > candle2.High) & (candle3.Open >= ((candle2.Close-(candle2.Open-candle2.Close)*0.85))) & (candle3.Low > candle2.Low):
                 flag3 = True
     return flag1 & flag2 & flag3
 
-def trendDownGreen(df):
+def trendDownGreen(df): #нисходящий тренд зеленый пин бар
     flag1 = False
     flag2 = False
     flag3 = False
@@ -63,9 +63,9 @@ def trendDownGreen(df):
     candle3 = candles.Candle(df[-1:])
     if (candle1.Red > 0) & (candle1.bodyRed >= 0.7):
         flag1 = True
-        if list(candle2.PatternGreenBottomShadow)[0] & (candle2.High <= (((float(candle1.High) - float(candle1.Low)) / 2)+candle1.Low)) & (candle2.Close <= candle1.Close) & (candle2.Open < candle1.Low) & (candle2.Low < candle1.Low):
+        if list(candle2.PatternGreenBottomShadow)[0] & (candle2.High <= (((float(candle1.High) - float(candle1.Low)) / 2)+candle1.Low)) & (candle2.Close <= ((candle1.Open-candle1.Close)*0.85) + candle1.Close) & (candle2.Open < candle1.Low) & (candle2.Low < candle1.Low):
             flag2 = True
-            if (candle3.Green > 0) & (candle3.Close > candle2.High) & (candle3.Open >= candle2.Open) & (candle3.Low > candle2.Low):
+            if (candle3.Green > 0) & (candle3.Close > candle2.High) & (candle3.Open >= (candle2.Open -((candle2.Close - candle2.Open) * 0.85))) & (candle3.Low > candle2.Low):
                 flag3 = True
     return flag1 & flag2 & flag3
 
@@ -73,15 +73,15 @@ def trendDownGreen(df):
 def anyPattern(folder):
     ticks = tickers(folder)
     for i in ticks:
-        df = pd.read_csv(folder + '/' + i)  # , index_col=0, parse_dates=True)
-        if 'Date' not in df: # на мелких тф колонка называется Datetime
+        df = pd.read_csv(folder + '/' + i)
+        if 'Date' not in df: #на мелких тф колонка называется Datetime
             df.rename(columns={'Datetime':'Date'}, inplace=True)
             df.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
         if (trendUpRed(df) | trendUpGreen(df) | trendDownRed(df) | trendDownGreen(df)):
             print(str(i)[:-4])
             df['signal'] = np.nan
-            df.signal[-2:-1] = float(df.High[-2:-1]) * 1.01
+            df.signal[-2:-1] = float(df.High[-2:-1]) * 1.01 #отметка свечи
             addPlot.mplot(df, df.signal, str(i)[:-4], folder)
 
-folder1 = '/home/linac/Рабочий стол/data/20210110_60d1d/'
+folder1 = '/home/linac/Рабочий стол/data/20210107_10d30m/'
 anyPattern(folder1)
