@@ -9,8 +9,10 @@ from datetime import datetime
 в имени каталога, куда скачиваются данные. Создает каталог для скачивания и еще два каталога для будущей сортировки.
 Возвращает лист из 3 путей.
 '''
-def download (period1, interval1):
-    folderName = str(datetime.date(datetime.now())).replace('-','') + '_' + str(period1) + str(interval1)
+
+
+def download(period1, interval1):
+    folderName = str(datetime.date(datetime.now())).replace('-', '') + '_' + str(period1) + str(interval1)
     path = '/home/linac/Рабочий стол/data/' + folderName + '/'
     pathUp = '/home/linac/Рабочий стол/data/' + folderName + '/up/'
     pathDown = '/home/linac/Рабочий стол/data/' + folderName + '/down/'
@@ -22,21 +24,22 @@ def download (period1, interval1):
         for i in str0.read().split(" "):
             ticker_list.append(i)
     str0.close()
-    for i in range (0,int(len(ticker_list)/100)):
+    for i in range(0, int(len(ticker_list) / 100)):
         try:
             data = yf.download(
-                    tickers = ticker_list[i*100:(i*100)+100],
-                    period = str(period1), #60d
-                    interval = str(interval1), #1h
-                    group_by = 'ticker',
-                    auto_adjust = True,
-                    prepost = False,
-                    threads = True
-                )
+                tickers=ticker_list[i * 100:(i * 100) + 100],
+                period=str(period1),  # 60d
+                interval=str(interval1),  # 1h
+                group_by='ticker',
+                auto_adjust=True,
+                prepost=False,
+                threads=True
+            )
             data = data.T
-            for ticker in ticker_list[i*100:(i*100)+100]:
-                with open('/home/linac/Рабочий стол/data/' + folderName + '/' + ticker + '.csv', 'w') as f:  # запись в файл
+            for ticker in ticker_list[i * 100:(i * 100) + 100]:
+                with open('/home/linac/Рабочий стол/data/' + folderName + '/' + ticker + '.csv', 'w') as f:  # в файл
                     f.write(data.loc[ticker].T.to_csv(sep=','))
                 f.close()
-        except: pass
-    return [path,pathUp,pathDown]
+        except:
+            pass
+    return [path, pathUp, pathDown]

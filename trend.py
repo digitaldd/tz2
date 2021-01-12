@@ -5,7 +5,7 @@ import threading as thr
 import yfinance as yf
 import os
 import talib
-from shutil import copy as copy # для копирования файлов
+from shutil import copy as copy  # для копирования файлов
 
 '''
 Определение тренда: Берем последние 10 дней (для дневного тф), каждая из 5 любых идущих друг за другом свечей 
@@ -24,7 +24,7 @@ strTickers = 'https://finviz.com/screener.ashx?v=211&ft=3&t='
 allCsv = []
 
 
-def trendDown(df,pathList,i):
+def trendDown(df, pathList, i):
     try:
         df['ema8'] = talib.EMA(df['Close'].values, timeperiod=8)  # добавляем столбец с расчитанным SMA
         trendNumber = df[-10:].loc[df.Close < df.ema8]  # берем 10 дней, хаи ниже 20 средней
@@ -35,8 +35,8 @@ def trendDown(df,pathList,i):
             for j in trendNumber.Close[firstIndex:]:
                 # ищем последовательность 3 свечей с падающим хай
                 if (trendNumber.Close[firstIndex - 1] > j) & (
-                    trendNumber.Open[firstIndex - 1] < trendNumber.ema8[firstIndex - 1]) & (
-                    trendNumber.Open[firstIndex] < trendNumber.ema8[firstIndex - 1]):
+                        trendNumber.Open[firstIndex - 1] < trendNumber.ema8[firstIndex - 1]) & (
+                        trendNumber.Open[firstIndex] < trendNumber.ema8[firstIndex - 1]):
                     count += 1
                 else:
                     count = 0
@@ -44,9 +44,11 @@ def trendDown(df,pathList,i):
                 if count == 3:
                     copy(pathList[0] + i, pathList[2])
                     break
-    except: pass
+    except:
+        pass
 
-def trendSort (pathlist):
+
+def trendSort(pathlist):
     global allCsv
     # получаем список всех csv
     direct = os.listdir(pathlist[0])
@@ -54,7 +56,7 @@ def trendSort (pathlist):
     allCsv = list(allCsv)
     for i in allCsv:
         # определеяем тренд
-        try: # обработка NaN
+        try:  # обработка NaN
             df = pd.read_csv(pathlist[0] + i)
             trendDown(df, pathlist, i)
             df['ema8'] = talib.EMA(df['Close'].values, timeperiod=8)  # добавляем столбец с расчитанным SMA
@@ -63,16 +65,20 @@ def trendSort (pathlist):
             if trendNumber.shape[0] >= 5:
                 count = 0
                 firstIndex = 1
-                trendNumber = trendNumber.reset_index(drop=True) # сброс индексов с 0
+                trendNumber = trendNumber.reset_index(drop=True)  # сброс индексов с 0
                 for j in trendNumber.Low[firstIndex:]:
                     # ищем последоватьельность 5 свечей с ростущим лоу
-                    if (trendNumber.Low[firstIndex-1] < j) & (trendNumber.Close[firstIndex-1] > trendNumber.ema8[firstIndex-1]) & (trendNumber.Close[firstIndex] > trendNumber.ema8[firstIndex-1]):
-                        count+=1
-                    else: count = 0
+                    if (trendNumber.Low[firstIndex - 1] < j) & (
+                            trendNumber.Close[firstIndex - 1] > trendNumber.ema8[firstIndex - 1]) & (
+                            trendNumber.Close[firstIndex] > trendNumber.ema8[firstIndex - 1]):
+                        count += 1
+                    else:
+                        count = 0
                     firstIndex += 1
                     if count == 5:
-                        copy (pathlist[0] + i, pathlist[1])
+                        copy(pathlist[0] + i, pathlist[1])
                         break
-        except: pass
+        except:
+            pass
 
-#print((time.time() - timeStart)/60, 'minutes.')
+# print((time.time() - timeStart)/60, 'minutes.')
